@@ -27,9 +27,9 @@ class PlanController extends BaseController
     {
         $plans = $this->planModel->getAllPlans();
         if( empty($plans) ) {
-            return $this->getResponse(true, []);
+            return $this->getResponse(true, [], 'Get data successfully');
         }
-        return $this->getResponse(true, $plans);
+        return $this->getResponse(true, $plans, 'Get data successfully');
     }
 
     /**
@@ -52,7 +52,7 @@ class PlanController extends BaseController
                 'message' => 'Element does not exist'
             ]);
         }
-        return $this->getResponse(true, $plan);
+        return $this->getResponse(true, $plan, 'Get data successfully');
     }
 
     /**
@@ -76,7 +76,7 @@ class PlanController extends BaseController
                 'message' => 'Cannot create data'
             ]);
         }
-        return $this->getResponse(true, $plan);
+        return $this->getResponse(true, $plan, 'Create plan successfully');
     }
 
     /**
@@ -97,7 +97,7 @@ class PlanController extends BaseController
             'code'    => 400,
             'message' => 'Cannot update data!'
         ]);
-        return $this->getResponse(true, $item);
+        return $this->getResponse(true, $item, 'Update plan successfully');
 
     }
 
@@ -118,6 +118,6 @@ class PlanController extends BaseController
         if(!$item){
             return $this->getResponse(false, ['code' => '', 'message' => 'Cannot delete data!']);
         }
-        return $this->getResponse(true, ['code' => '', 'message' => 'Delete successfully']);
+        return $this->getResponse(true, (object)[], 'Delete data successfully');
     }
 }

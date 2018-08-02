@@ -17,7 +17,7 @@ class BaseController extends Controller
      * @param array $data
      * @return $this|\Illuminate\Http\JsonResponse
      */
-    public function getResponse($status = false, $data = [])
+    public function getResponse($status = false, $data = [], $message = '')
     {
         if ($status == false) {
             return response()->json([
@@ -29,7 +29,8 @@ class BaseController extends Controller
         }
         return response()->json([
             'status' => $status,
-            'data'   => $data
+            'data'   => $data,
+            'message' => $message
         ]);
     }
 
