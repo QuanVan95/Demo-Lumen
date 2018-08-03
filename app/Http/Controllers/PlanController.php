@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Base\BaseController;
 use App\Http\Models\Plan;
 use Illuminate\Http\Request;
 
@@ -25,11 +26,14 @@ class PlanController extends BaseController
      */
     public function getAllPlans()
     {
-        $plans = $this->planModel->getAllPlans();
-        if( empty($plans) ) {
+        $page     = $this->data['page'];
+        $limit    = $this->data['limit'];
+        $plans    = $this->planModel->getAllPlans($page, $limit);
+        $paginate = $this->planModel->getPagination($page, $limit);
+        if (empty($plans)) {
             return $this->getResponse(true, [], 'Get data successfully');
         }
-        return $this->getResponse(true, $plans, 'Get data successfully');
+        return $this->getResponse(true, $plans, 'Get data successfully', $paginate);
     }
 
     /**
@@ -62,7 +66,7 @@ class PlanController extends BaseController
     public function createPlan()
     {
         $validation = Validator::make($this->data,
-            ['plan_name'          => 'required'],
+            ['plan_name' => 'required'],
             ['plan_name.required' => 'Plan name is required']
         );
         if ($validation->fails()) {
@@ -115,7 +119,7 @@ class PlanController extends BaseController
             ]);
         }
         $item = $this->planModel->deletePlan($id);
-        if(!$item){
+        if (!$item) {
             return $this->getResponse(false, ['code' => '', 'message' => 'Cannot delete data!']);
         }
         return $this->getResponse(true, (object)[], 'Delete data successfully');

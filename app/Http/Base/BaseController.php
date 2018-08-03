@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Base;
 
+use App\Http\Controllers\Controller;
 use App\Http\Models\Plan;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,7 @@ class BaseController extends Controller
      * @param array $data
      * @return $this|\Illuminate\Http\JsonResponse
      */
-    public function getResponse($status = false, $data = [], $message = '')
+    public function getResponse($status = false, $data = [], $message = '', $paginate = [])
     {
         if ($status == false) {
             return response()->json([
@@ -27,9 +28,18 @@ class BaseController extends Controller
                 ]
             ]);
         }
+
+        if ($paginate !== null) {
+            return response()->json([
+                'status'     => $status,
+                'data'       => $data,
+                'pagination' => $paginate
+            ])->setEncodingOptions(JSON_NUMERIC_CHECK);
+        }
+
         return response()->json([
-            'status' => $status,
-            'data'   => $data,
+            'status'  => $status,
+            'data'    => $data,
             'message' => $message
         ]);
     }
@@ -47,4 +57,12 @@ class BaseController extends Controller
             'message' => $error[0]
         ]);
     }
+
+    /**
+     * Function get paginate
+     * @param $data
+     * @param int $page
+     * @param int $limit
+     * @return array
+     */
 }

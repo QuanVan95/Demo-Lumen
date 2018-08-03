@@ -2,10 +2,11 @@
 
 namespace App\Http\Models;
 
+use App\Http\Base\BaseModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Plan extends Model
+class Plan extends BaseModel
 {
     protected $table = 'plans';
     protected $primaryKey = 'plan_id';
@@ -19,10 +20,11 @@ class Plan extends Model
     /**
      * Function get all plans
      */
-    public function getAllPlans() {
+    public function getAllPlans($page = 1, $limit = 10) {
         try
         {
-            $planList = Plan::all();
+            $planList = Plan::select('*')->offset(($page - 1) * $limit)
+                ->limit($limit)->get();
             return $planList;
         } catch (\Exception $e) {
             return false;
@@ -105,5 +107,6 @@ class Plan extends Model
             return false;
         }
     }
+
 }
 
