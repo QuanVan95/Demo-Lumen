@@ -24,10 +24,15 @@ class PlanController extends BaseController
      * Controller get all plans
      * @return $this|\Illuminate\Http\JsonResponse
      */
-    public function getAllPlans()
+    public function getAllPlans($page = 1, $limit = 10)
     {
-        $page     = $this->data['page'];
-        $limit    = $this->data['limit'];
+        if (!empty($this->data['page'])) {
+            $page     = $this->data['page'];
+        }
+        if (!empty($this->data['limit'])) {
+            $limit    = $this->data['limit'];
+        }
+
         $plans    = $this->planModel->getAllPlans($page, $limit);
         $paginate = $this->planModel->getPagination($page, $limit);
         if (empty($plans)) {
