@@ -29,10 +29,11 @@ class BaseController extends Controller
             ]);
         }
 
-        if ($paginate !== null) {
+        if (!empty($paginate)) {
             return response()->json([
                 'status'     => $status,
                 'data'       => $data,
+                'message'    => $message,
                 'pagination' => $paginate
             ])->setEncodingOptions(JSON_NUMERIC_CHECK);
         }
@@ -58,11 +59,4 @@ class BaseController extends Controller
         ]);
     }
 
-    /**
-     * Function get paginate
-     * @param $data
-     * @param int $page
-     * @param int $limit
-     * @return array
-     */
 }

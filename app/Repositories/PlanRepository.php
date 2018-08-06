@@ -1,22 +1,11 @@
 <?php
 
-namespace App\Http\Models;
+namespace App\Repositories;
 
-use App\Http\Base\BaseModel;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use App\Models\Plan;
 
-class Plan extends BaseModel
+class PlanRepository
 {
-    protected $table = 'plans';
-    protected $primaryKey = 'plan_id';
-    const CREATED_AT = 'created_date';
-    const UPDATED_AT = 'last_update';
-
-    public $fillable = ['plan_id', 'plan_name', 'name', 'country', 'description', 'plan_description', 'plan_type', 'packages', 'drm_system_type',
-        'allow_payment_gateways', 'display_platforms', 'value', 'playcoin', 'playkeng', 'discount', 'is_giftcode', 'status', 'created_date', 'last_update',
-        'is_promotion', 'app_id', 'platform', 'image', 'subs_handle', 'package', 'specific', 'usd', 'specific_time', 'partner', 'free_plans'];
-
     /**
      * Function get all plans
      */
@@ -48,7 +37,6 @@ class Plan extends BaseModel
         } catch (\Exception $e) {
             return false;
         }
-
     }
 
     /**
@@ -78,6 +66,9 @@ class Plan extends BaseModel
     {
         try {
             $oldPlan = Plan::select('*')->where( 'plan_id', $id)->get()->first();
+            if (empty($oldPlan)) {
+                return false;
+            }
             $plan = $oldPlan->fill($data);
             $plan->save();
             return $plan;
@@ -106,6 +97,15 @@ class Plan extends BaseModel
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    public function getPagination($page = 1, $limit = 10){
+        $totalResult = Plan::count();
+        return [
+            "page" => $page,
+            "limit" => $limit,
+            "total" => $totalResult
+        ];
     }
 
 }

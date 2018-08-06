@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Base\BaseController;
-use App\Http\Models\Plan;
+use App\Models\Plan;
+use App\Repositories\PlanRepository;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Validator;
@@ -11,13 +12,13 @@ use Illuminate\Support\Facades\Validator;
 
 class PlanController extends BaseController
 {
-    protected $planModel;
     protected $data;
+    protected $planRepo;
 
-    public function __construct(Request $request, Plan $plan)
+    public function __construct(Request $request, Plan $plan, PlanRepository $planRepository)
     {
-        $this->planModel = $plan;          // Model plan
-        $this->data      = $request->all(); // Get all request
+        $this->data     = $request->all(); // Get all request
+        $this->planRepo = $planRepository;
     }
 
     /**
@@ -27,14 +28,14 @@ class PlanController extends BaseController
     public function getAllPlans($page = 1, $limit = 10)
     {
         if (!empty($this->data['page'])) {
-            $page     = $this->data['page'];
+            $page = $this->data['page'];
         }
         if (!empty($this->data['limit'])) {
-            $limit    = $this->data['limit'];
+            $limit = $this->data['limit'];
         }
 
-        $plans    = $this->planModel->getAllPlans($page, $limit);
-        $paginate = $this->planModel->getPagination($page, $limit);
+        $plans    = $this->planRepo->getAllPlans($page, $limit);
+        $paginate = $this->planRepo->getPagination($page, $limit);
         if (empty($plans)) {
             return $this->getResponse(true, [], 'Get data successfully');
         }
@@ -50,14 +51,12 @@ class PlanController extends BaseController
     {
         if (empty($id)) {
             return $this->getResponse(false, [
-                'code'    => 400,
                 'message' => 'Cannot get data'
             ]);
         }
-        $plan = $this->planModel->getPlanById($id);
+        $plan = $this->planRepo->getPlanById($id);
         if (!$plan) {
             return $this->getResponse(false, [
-                'code'    => 400,
                 'message' => 'Element does not exist'
             ]);
         }
@@ -78,10 +77,9 @@ class PlanController extends BaseController
             return $this->checkValidate($validation);
         }
 
-        $plan = $this->planModel->createPlan($this->data);
+        $plan = $this->planRepo->createPlan($this->data);
         if (!$plan) {
             return $this->getResponse(false, [
-                'code'    => 400,
                 'message' => 'Cannot create data'
             ]);
         }
@@ -97,13 +95,11 @@ class PlanController extends BaseController
     {
         if (empty($id) || empty($this->data)) {
             return $this->getResponse(false, [
-                'code'    => 400,
                 'message' => 'Cannot update data'
             ]);
         };
-        $item = $this->planModel->updatePlan($this->data, $id);
+        $item = $this->planRepo->updatePlan($this->data, $id);
         if (!$item) return $this->getResponse(false, [
-            'code'    => 400,
             'message' => 'Cannot update data!'
         ]);
         return $this->getResponse(true, $item, 'Update plan successfully');
@@ -119,11 +115,10 @@ class PlanController extends BaseController
     {
         if (empty($id)) {
             return $this->getResponse(false, [
-                'code'    => 400,
                 'message' => 'Cannot delete data'
             ]);
         }
-        $item = $this->planModel->deletePlan($id);
+        $item = $this->planRepo->deletePlan($id);
         if (!$item) {
             return $this->getResponse(false, ['code' => '', 'message' => 'Cannot delete data!']);
         }
