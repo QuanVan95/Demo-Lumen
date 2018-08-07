@@ -16,8 +16,7 @@ $router->get('/', function () use ($router) {
 });
 
 //Plan Routes
-//$router->group(['prefix' => '/plans', 'middleware' => 'authorization'], function () use ($router) {
-    $router->group(['prefix' => '/plans'], function () use ($router) {
+$router->group(['prefix' => '/plans', 'middleware' => 'authorization'], function () use ($router) {
     $router->get('/', 'PlanController@getAllPlans');
     $router->get('/{id}', 'PlanController@getPlanById');
     $router->post('/', 'PlanController@createPlan');

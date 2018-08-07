@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
-use App\Http\Base\BaseModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Plan extends BaseModel
+class Plan extends Model
 {
     protected $table = 'plans';
     protected $primaryKey = 'plan_id';
