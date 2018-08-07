@@ -21,7 +21,7 @@ class PlanController extends BaseController
     {
         $this->data     = $request->all(); // Get all request
         $this->planRepo = $planRepository;
-        $this->redis    = $redis::connection(); //Create redis connection
+        $this->redis    = $redis::connection('customer'); //Create redis connection
     }
 
     /**
@@ -30,16 +30,17 @@ class PlanController extends BaseController
      */
     public function getAllPlans($page = 1, $limit = 10)
     {
-        $this->redis->set('check', '101');
         if (!empty($this->data['page'])) {
             $page = $this->data['page'];
         }
         if (!empty($this->data['limit'])) {
             $limit = $this->data['limit'];
         }
+        $key = $this->redis->de('list_*');
+        die();
         $plansRedisKey = 'list_' . $page . '_' . $limit;
         if ($this->redis->hexists('plans', $plansRedisKey)) {      //Check get all plans key is existed on redis
-            $plans = json_decode($this->redis->hget('plans', 'list'));
+            $plans = json_decode($this->redis->hget('plans', $plansRedisKey));
             return $this->getResponse(true, $plans, 'Get data successfully');
         }
 
