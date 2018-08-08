@@ -22,4 +22,5 @@ $router->group(['prefix' => '/plans', 'middleware' => 'authorization'], function
     $router->post('/', 'PlanController@createPlan');
     $router->put('/{id}', 'PlanController@updatePlan');
     $router->delete('/{id}', 'PlanController@deletePlan');
+    $router->post('/queue', 'PlanController@createPlanWithQueue');
 });

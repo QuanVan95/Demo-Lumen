@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Base\BaseController;
+use App\Jobs\CreatePlanJob;
 use App\Models\Plan;
 use App\Repositories\PlanRepository;
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Carbon;
 
 
 class PlanController extends BaseController
@@ -159,5 +160,15 @@ class PlanController extends BaseController
             $this->redis->del($key);
         }
         return true;
+    }
+
+    /**
+     * Function create plan and put into queue
+     * @return $this|\Illuminate\Http\JsonResponse
+     */
+    public function createPlanWithQueue () {
+        $jobCreatePlan = (new CreatePlanJob($this->data, $this->planRepo))->onQueue('plan')->delay(Carbon::now()->addMinutes(3));
+        dispatch($jobCreatePlan);
+        return $this->getResponse(true, (object) [], 'Create plan in queue successfully');
     }
 }
