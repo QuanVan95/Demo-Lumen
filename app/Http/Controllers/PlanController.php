@@ -21,7 +21,7 @@ class PlanController extends BaseController
     {
         $this->data     = $request->all(); // Get all request
         $this->planRepo = $planRepository;
-        $this->redis    = $redis::connection('customer'); //Create redis connection
+        $this->redis    = $redis::connection('plan'); //Create redis connection
     }
 
     /**
@@ -36,11 +36,9 @@ class PlanController extends BaseController
         if (!empty($this->data['limit'])) {
             $limit = $this->data['limit'];
         }
-        $key = $this->redis->de('list_*');
-        die();
-        $plansRedisKey = 'list_' . $page . '_' . $limit;
-        if ($this->redis->hexists('plans', $plansRedisKey)) {      //Check get all plans key is existed on redis
-            $plans = json_decode($this->redis->hget('plans', $plansRedisKey));
+        $plansRedisKey = 'list:' . $page . ':' . $limit;
+        if ($this->redis->exists($plansRedisKey)) {      //Check get all plans key is existed on redis
+            $plans = json_decode($this->redis->get($plansRedisKey));
             return $this->getResponse(true, $plans, 'Get data successfully');
         }
 
@@ -49,7 +47,7 @@ class PlanController extends BaseController
         if (empty($plans)) {
             return $this->getResponse(true, [], 'Get data successfully');
         }
-        $this->redis->hset('plans', $plansRedisKey, $plans);
+        $this->redis->set($plansRedisKey, $plans);
         return $this->getResponse(true, $plans, 'Get data successfully', $paginate);
     }
 
@@ -66,8 +64,8 @@ class PlanController extends BaseController
             ]);
         }
 
-        if ($this->redis->hexists('plans', 'plan:' . $id)) {
-            $plan = json_decode($this->redis->hget('plans', 'plan:' . $id));
+        if ($this->redis->exists('plan:' . $id)) {
+            $plan = json_decode($this->redis->get('plan:' . $id));
             return $this->getResponse(true, $plan, 'Get data successfully');
         }
 
@@ -77,7 +75,7 @@ class PlanController extends BaseController
                 'message' => 'Element does not exist'
             ]);
         }
-        $this->redis->hset('plans', 'plan:' . $id, $plan);
+        $this->redis->set('plan:' . $id, $plan);
         return $this->getResponse(true, $plan, 'Get data successfully');
     }
 
@@ -101,10 +99,7 @@ class PlanController extends BaseController
                 'message' => 'Cannot create data'
             ]);
         }
-
-        if ($this->redis->exists('plans')) {
-            $this->redis->del(['plans']);  //Delete plan list in redis when update data successfully
-        }
+        $this->deleteListPlanKeys(); //Delete all plan lists on redis
         return $this->getResponse(true, $plan, 'Create plan successfully');
     }
 
@@ -124,11 +119,10 @@ class PlanController extends BaseController
         if (!$item) return $this->getResponse(false, [
             'message' => 'Cannot update data!'
         ]);
-
-        if ($this->redis->exists('plans')) {
-            $this->redis->del(['plans']);  //Delete plan list in redis when update data successfully
+        if ($this->redis->exists('plan:' . $id)) { //Check and delete redis key of current plan
+            $this->redis->del(['plan:' . $id]);
         }
-
+        $this->deleteListPlanKeys(); //Delete all plan lists on redis
         return $this->getResponse(true, $item, 'Update plan successfully');
     }
 
@@ -148,13 +142,22 @@ class PlanController extends BaseController
         if (!$item) {
             return $this->getResponse(false, ['code' => '', 'message' => 'Cannot delete data!']);
         }
-        if ($this->redis->exists('plans')) {
-            $this->redis->del(['plans']);  //Delete plan list in redis when update data successfully
+        if ($this->redis->exists('plan:' . $id)) {  //Check and delete redis key of current plan
+            $this->redis->del(['plan:' . $id]);
         }
+        $this->deleteListPlanKeys(); //Delete all plan lists on redis
         return $this->getResponse(true, (object)[], 'Delete data successfully');
     }
 
-    public function removeGetAllPlanKeys () {
-        $keys = $this->redis->keys('');
+    public function deleteListPlanKeys()
+    {
+        $redisKeys = $this->redis->keys('list:*');
+        if (empty($redisKeys)) {
+            return true;
+        }
+        foreach ($redisKeys as $key) {
+            $this->redis->del($key);
+        }
+        return true;
     }
 }
