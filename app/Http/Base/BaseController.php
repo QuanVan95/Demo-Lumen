@@ -5,6 +5,7 @@ namespace App\Http\Base;
 use App\Http\Controllers\Controller;
 use App\Http\Models\Plan;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class BaseController extends Controller
 {
@@ -18,12 +19,14 @@ class BaseController extends Controller
      * @param array $data
      * @return $this|\Illuminate\Http\JsonResponse
      */
-    public function getResponse($status = false, $data = [], $message = '', $paginate = [])
+    public function getResponse($status = false, $data = [], $message = '', $paginate = [], $code = 200)
     {
         if ($status == false) {
             return response()->json([
-                'status' => $status,
-                'data'   => [
+                'status'  => $status,
+                'code'    => $code,
+                'message' => $message,
+                'data'    => [
                     'error' => $data
                 ]
             ]);
@@ -32,6 +35,7 @@ class BaseController extends Controller
         if (!empty($paginate)) {
             return response()->json([
                 'status'     => $status,
+                'code'       => $code,
                 'data'       => $data,
                 'message'    => $message,
                 'pagination' => $paginate
@@ -40,6 +44,7 @@ class BaseController extends Controller
 
         return response()->json([
             'status'  => $status,
+            'code'    => $code,
             'data'    => $data,
             'message' => $message
         ]);
@@ -57,6 +62,21 @@ class BaseController extends Controller
             'code'    => '',
             'message' => $error[0]
         ]);
+    }
+
+    /**
+     * Function catch exception for response API
+     * @return BaseController|\Illuminate\Http\JsonResponse
+     */
+    public function catchResponseException($e)
+    {
+        if ($e instanceof HttpException) {
+            return $this->getResponse(false, (object)[], 'Something went wrong', [], $e->getStatusCode());
+        }
+        if ($e->getCode()) {
+            return $this->getResponse(false, (object)[], 'Something went wrong', [], $e->getCode());
+        }
+        return $this->getResponse(false, (object)[], 'Something went wrong', [], 400);
     }
 
 }
